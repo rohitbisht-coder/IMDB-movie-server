@@ -2,7 +2,7 @@ import mongoose, { Mongoose } from "mongoose";
 import { favSchma, userSchma } from "./user.schma.js";
 import { comparePassword } from "../../utilis/hashPassword.js";
 
-const userModel = mongoose.model("user", userSchma);
+export const userModel = mongoose.model("user", userSchma);
 const favMovieModel = mongoose.model("favMovie", favSchma);
 
 

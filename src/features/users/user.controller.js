@@ -2,23 +2,25 @@ import { customErrorHandler } from "../../middlewares/errorHandler.js";
 import userRepository from "./user.repository.js";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt";
+import dotenv from "dotenv"
+dotenv.config()
 export default class userController {
-    constructor(){
+    constructor() {
         this.userController = new userRepository()
     }
 
-    signUp=async(req,res,next)=>{
+    signUp = async (req, res, next) => {
         let password = req.body.password.toString();
         password = await bcrypt.hash(password, 12);
         const resp = await this.userController.createUser({ ...req.body, password });
-       
+
         if (resp.success) {
             res.status(201).json({
                 success: true,
                 msg: "Registration successful",
                 res: resp.res,
             });
-        } else {
+        } else { 
             next(new customErrorHandler(resp.error.statusCode, resp.error.msg));
         }
     }
@@ -28,20 +30,21 @@ export default class userController {
         const userData = { email, password };
         const resp = await this.userController.loginUser(userData);
         if (resp.success) {
-            const token = jwt.sign({ _id: resp._id , user:resp.res._id}, "rfiwugjwij2938g3929fj92jr3939fwol", {
+         const token = jwt.sign({ _id: resp._id, user: resp.res._id }, process.env.jwt_secret_key, {
                 expiresIn: "1h"
             })
-            res
-                .cookie("jwtToken", token, { maxAge: 1 * 60 * 60 * 1000, httpOnly: true })
-                .json({ success: true, msg: "Login successful", token , user:resp.res });
+            req.session.token = token
+            res.status(200)
+                .json({ success: true, msg: "Login successful", token, user: resp.res });
         } else {
             next(new customErrorHandler(resp.error.statusCode, resp.error.msg));
         }
     }
 
     addMovie = async (req, res, next) => {
-        const {poster , name , userId ,movieId} = req.body
-        const resp = await this.userController.addMovieToFav(poster ,name,userId , movieId);
+        const { poster, name, movieId } = req.body
+        const userId = req.user._id;
+        const resp = await this.userController.addMovieToFav(poster, name, userId, movieId);
         if (resp.success) {
             res.status(201).json({
                 success: true,
@@ -51,12 +54,13 @@ export default class userController {
         } else {
             next(new customErrorHandler(resp.error.statusCode, resp.error.msg));
         }
-       
+
     }
-    
+
     removeMovie = async (req, res, next) => {
-        const {userId , movieId} = req.body
-        const resp = await this.userController.removeMovieFromFav(userId , movieId);
+        const { movieId } = req.body
+        const userId = req.user._id;
+        const resp = await this.userController.removeMovieFromFav(userId, movieId);
         if (resp.success) {
             res.status(200).json({
                 success: true,
@@ -69,7 +73,7 @@ export default class userController {
     }
 
     getFavMovie = async (req, res, next) => {
-        const {userId} = req.params
+        const  userId  = req.user._id
         const resp = await this.userController.getFavMovie(userId);
         if (resp.success) {
             res.status(200).json({
@@ -80,9 +84,18 @@ export default class userController {
             next(new customErrorHandler(resp.error.statusCode, resp.error.msg));
         }
     }
-    
+
 }
 
 export const userLogout = (req, res, next) => {
-    res.clearCookie("jwtToken").json({ success: true, msg: "logout successful" });
+    req.session.destroy((err)=>{
+        res.status(200).json({ success: true, msg: "logout successful" });
+    })
 };
+
+export const auth = async (req, res) => {
+    if(req.user){
+        return res.status(200).json({user:req.user , userName:req.user.name})
+
+    }
+  };
