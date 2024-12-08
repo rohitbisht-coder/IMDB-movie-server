@@ -7,7 +7,7 @@ dotenv.config()
 import cors from "cors"
 import session from "express-session";
 const app = express()
-app.use(cors({ origin: 'https://polite-gnome-044892.netlify.app' , credentials:true
+app.use(cors({ origin: 'https://imdb-app-by-rohit-coder.netlify.app' , credentials:true
 }))
 app.use(session({
     name:'jwt',
