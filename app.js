@@ -16,6 +16,9 @@ app.use(session({
     saveUninitialized:true,
     cookie:{secure:false}
 }))
+app.get("/" , (req,res)=>{
+   res.send("Server is running")
+})
 app.use(cookieParser())
 app.use(express.json())
 app.use("/api/user", userRoutes)

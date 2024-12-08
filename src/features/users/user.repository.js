@@ -52,7 +52,6 @@ export default class userRepository {
         try {
             const findMovie = await favMovieModel.find({movieId});
             await userModel.updateOne({ _id: userId }, { $pull:{Favorite:findMovie[0]._id} })
-            console.log(findMovie)
             await favMovieModel.findByIdAndDelete(findMovie[0]._id)
             const user = await userModel.findById(userId).populate("Favorite").exec()
             return { success: true, error: { statusCode: 200, msg: "Movie Removed Succesfully" }, res:user.Favorite};

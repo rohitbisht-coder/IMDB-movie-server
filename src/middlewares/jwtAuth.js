@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import { customErrorHandler } from "./errorHandler.js";
 import dotenv from "dotenv"
 import { userModel } from "../features/users/user.repository.js";
 dotenv.config()
